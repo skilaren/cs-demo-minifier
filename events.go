@@ -62,6 +62,7 @@ func (defaultEventHandlers) RegisterAll(ec *EventCollector) {
 	EventHandlers.Default.RegisterPlayerTeamChange(ec)
 	EventHandlers.Default.RegisterPlayerDisconnect(ec)
 	EventHandlers.Default.RegisterWeaponFired(ec)
+	EventHandlers.Default.RegisterGrenadeProjectileDestroy(ec)
 	EventHandlers.Default.RegisterChatMessage(ec)
 }
 
@@ -106,7 +107,17 @@ func (defaultEventHandlers) RegisterPlayerHurt(ec *EventCollector) {
 
 func (defaultEventHandlers) RegisterPlayerFlashed(ec *EventCollector) {
 	ec.AddHandler(func(e events.PlayerFlashed) {
-		ec.AddEvent(createEntityEvent(rep.EventFlashed, e.Player.EntityID))
+		eb := buildEvent(rep.EventFlashed)
+
+		if e.Attacker != nil {
+			eb.intAttr(rep.AttrKindAttacker, e.Attacker.EntityID)
+		}
+		if e.Player != nil {
+			eb.intAttr(rep.AttrKindPlayer, e.Player.EntityID)
+		}
+		eb.floatAttr(rep.AttrKindFlashDur, e.FlashDuration().Seconds())
+
+		ec.AddEvent(eb.build())
 	})
 }
 
@@ -138,7 +149,26 @@ func (defaultEventHandlers) RegisterPlayerDisconnect(ec *EventCollector) {
 
 func (defaultEventHandlers) RegisterWeaponFired(ec *EventCollector) {
 	ec.AddHandler(func(e events.WeaponFire) {
-		ec.AddEvent(createEntityEvent(rep.EventFire, e.Shooter.EntityID))
+		eb := buildEvent(rep.EventFire)
+
+		eb.intAttr(rep.AttrKindEntityID, e.Shooter.EntityID)
+		eb.intAttr(rep.AttrKindWeapon, int(e.Weapon.Weapon))
+
+		ec.AddEvent(eb.build())
+	})
+}
+
+func (defaultEventHandlers) RegisterGrenadeProjectileDestroy(ec *EventCollector) {
+	ec.AddHandler(func(e events.GrenadeProjectileDestroy) {
+		eb := buildEvent(rep.EventGrenadeProjectileDestroy)
+
+		if e.Projectile.Thrower != nil {
+			eb.intAttr(rep.AttrKindPlayer, e.Projectile.Thrower.EntityID)
+		}
+		eb.intAttr(rep.AttrKindWeapon, int(e.Projectile.WeaponInstance.Weapon))
+		eb.trajectoryAttr(rep.AttrKindTrajectory, r3VectorsToPoints(e.Projectile.Trajectory))
+
+		ec.AddEvent(eb.build())
 	})
 }
 
@@ -186,6 +216,22 @@ func (b *eventBuilder) intAttr(key string, value int) *eventBuilder {
 	b.event.Attributes = append(b.event.Attributes, rep.EventAttribute{
 		Key:    key,
 		NumVal: float64(value),
+	})
+	return b
+}
+
+func (b *eventBuilder) floatAttr(key string, value float64) *eventBuilder {
+	b.event.Attributes = append(b.event.Attributes, rep.EventAttribute{
+		Key:    key,
+		NumVal: value,
+	})
+	return b
+}
+
+func (b *eventBuilder) trajectoryAttr(key string, value []rep.Point) *eventBuilder {
+	b.event.Attributes = append(b.event.Attributes, rep.EventAttribute{
+		Key:           key,
+		TrajectoryVal: value,
 	})
 	return b
 }
