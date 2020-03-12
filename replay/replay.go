@@ -3,19 +3,19 @@ package replay
 
 // Possible attribute kinds
 const (
-	AttrKindEntityID        = "entityId"
-	AttrKindVictim          = "victim"
-	AttrKindKiller          = "killer"
-	AttrKindAssister        = "assister"
-	AttrKindText            = "text"
-	AttrKindSender          = "sender"
-	AttrKindWeapon          = "weapon"
-	AttrKindAttacker        = "attacker"
-	AttrKindPlayer          = "player"
-	AttrKindFlashDur        = "flashDuration"
-	AttrKindTrajectoryStart = "trajectory_start"
-	AttrKindTrajectoryEnd   = "trajectory_end"
-	AttrKindTrajectory      = "trajectory"
+	AttrKindEntityID     = "entityId"
+	AttrKindVictim       = "victim"
+	AttrKindKiller       = "killer"
+	AttrKindAssister     = "assister"
+	AttrKindText         = "text"
+	AttrKindSender       = "sender"
+	AttrKindWeapon       = "weapon"
+	AttrKindAttacker     = "attacker"
+	AttrKindPlayer       = "player"
+	AttrKindFlashDur     = "flashDuration"
+	AttrKindTrajectory   = "trajectory"
+	AttrKindHealthDamage = "health_damage"
+	AttrKindVictimWeapon = "victim_weapon"
 )
 
 // Possible event types

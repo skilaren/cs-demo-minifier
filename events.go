@@ -85,6 +85,7 @@ func (defaultEventHandlers) RegisterPlayerKilled(ec *EventCollector) {
 	ec.AddHandler(func(e events.Kill) {
 		eb := buildEvent(rep.EventKill)
 		eb.intAttr(rep.AttrKindVictim, e.Victim.EntityID)
+		eb.intAttr(rep.AttrKindVictimWeapon, int(e.Victim.ActiveWeapon().Weapon))
 		eb.intAttr(rep.AttrKindWeapon, int(e.Weapon.Weapon))
 
 		if e.Killer != nil {
@@ -101,7 +102,21 @@ func (defaultEventHandlers) RegisterPlayerKilled(ec *EventCollector) {
 
 func (defaultEventHandlers) RegisterPlayerHurt(ec *EventCollector) {
 	ec.AddHandler(func(e events.PlayerHurt) {
-		ec.AddEvent(createEntityEvent(rep.EventHurt, e.Player.EntityID))
+		eb := buildEvent(rep.EventHurt)
+
+		if e.Attacker != nil {
+			eb.intAttr(rep.AttrKindAttacker, e.Attacker.EntityID)
+		}
+
+		if e.Player != nil {
+			eb.intAttr(rep.AttrKindPlayer, e.Player.EntityID)
+		}
+
+		eb.intAttr(rep.AttrKindWeapon, int(e.Weapon.Weapon))
+		eb.intAttr(rep.AttrKindHealthDamage, e.HealthDamage)
+		eb.intAttr(rep.AttrKindEntityID, int(e.Weapon.UniqueID()))
+
+		ec.AddEvent(eb.build())
 	})
 }
 
@@ -167,6 +182,7 @@ func (defaultEventHandlers) RegisterGrenadeProjectileDestroy(ec *EventCollector)
 		}
 		eb.intAttr(rep.AttrKindWeapon, int(e.Projectile.WeaponInstance.Weapon))
 		eb.trajectoryAttr(rep.AttrKindTrajectory, r3VectorsToPoints(e.Projectile.Trajectory))
+		eb.intAttr(rep.AttrKindEntityID, int(e.Projectile.WeaponInstance.UniqueID()))
 
 		ec.AddEvent(eb.build())
 	})
